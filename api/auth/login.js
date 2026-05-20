@@ -1,4 +1,5 @@
 import { getDb, COLLECTIONS } from "../../lib/mongodb.js";
+import { mongoErrorMessage } from "../../lib/mongo-error.js";
 import { verifyPassword, signToken } from "../../lib/auth.js";
 import { setCors, handleOptions } from "../../lib/cors.js";
 
@@ -40,9 +41,11 @@ export default async function handler(req, res) {
     });
   } catch (err) {
     console.error("login error:", err);
-    const isDev = process.env.NODE_ENV !== "production";
-    return res.status(500).json({
-      error: isDev ? err.message || "Login failed." : "Login failed.",
-    });
+    const message = mongoErrorMessage(err);
+    const isMongo =
+      message.includes("MongoDB") ||
+      message.includes("MONGODB_URI") ||
+      message.includes("Atlas");
+    return res.status(isMongo ? 503 : 500).json({ error: message });
   }
 }

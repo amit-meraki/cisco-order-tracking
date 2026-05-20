@@ -1,4 +1,5 @@
 import { useState } from "react";
+import ProgressBar from "./ProgressBar.jsx";
 
 const TABS = [
   { id: "add", label: "Bulk Add" },
@@ -6,7 +7,13 @@ const TABS = [
   { id: "delete", label: "Bulk Delete" },
 ];
 
-export default function BulkPanel({ orders, onBulkAdd, onBulkUpdate, onBulkDelete }) {
+export default function BulkPanel({
+  onBulkAdd,
+  onBulkUpdate,
+  onBulkDelete,
+  bulkAddProgress,
+  bulkUpdateProgress,
+}) {
   const [tab, setTab] = useState("add");
   const [addText, setAddText] = useState("");
   const [updateText, setUpdateText] = useState("");
@@ -40,9 +47,21 @@ export default function BulkPanel({ orders, onBulkAdd, onBulkUpdate, onBulkDelet
             onChange={(e) => setAddText(e.target.value)}
             placeholder={'[{"orderNo":"PO-001","status":"Pending"}]'}
           />
+          {bulkAddProgress && (
+            <ProgressBar
+              current={bulkAddProgress.current}
+              total={bulkAddProgress.total}
+              label={bulkAddProgress.label}
+            />
+          )}
           <div className="form-actions">
-            <button type="button" className="btn btn-primary" onClick={() => onBulkAdd(addText, setAddText)}>
-              Add All
+            <button
+              type="button"
+              className="btn btn-primary"
+              disabled={Boolean(bulkAddProgress)}
+              onClick={() => onBulkAdd(addText, setAddText)}
+            >
+              {bulkAddProgress ? "Adding…" : "Add All"}
             </button>
           </div>
         </>
@@ -57,9 +76,21 @@ export default function BulkPanel({ orders, onBulkAdd, onBulkUpdate, onBulkDelet
             value={updateText}
             onChange={(e) => setUpdateText(e.target.value)}
           />
+          {bulkUpdateProgress && (
+            <ProgressBar
+              current={bulkUpdateProgress.current}
+              total={bulkUpdateProgress.total}
+              label={bulkUpdateProgress.label}
+            />
+          )}
           <div className="form-actions">
-            <button type="button" className="btn btn-primary" onClick={() => onBulkUpdate(updateText, setUpdateText)}>
-              Update All
+            <button
+              type="button"
+              className="btn btn-primary"
+              disabled={Boolean(bulkUpdateProgress)}
+              onClick={() => onBulkUpdate(updateText, setUpdateText)}
+            >
+              {bulkUpdateProgress ? "Updating…" : "Update All"}
             </button>
           </div>
         </>

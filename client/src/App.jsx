@@ -17,6 +17,8 @@ export default function App() {
   const [search, setSearch] = useState("");
   const [editing, setEditing] = useState(null);
   const [loginOpen, setLoginOpen] = useState(false);
+  const [bulkAddProgress, setBulkAddProgress] = useState(null);
+  const [bulkUpdateProgress, setBulkUpdateProgress] = useState(null);
 
   const loadOrders = useCallback(async () => {
     setLoading(true);
@@ -100,15 +102,36 @@ export default function App() {
     try {
       const items = JSON.parse(text);
       if (!Array.isArray(items)) throw new Error("Input must be a JSON array.");
+
+      const total = items.length;
+      setBulkAddProgress({ current: 0, total, label: "Preparing bulk add…" });
+
       for (let i = 0; i < items.length; i++) {
+        const orderNo = String(items[i].orderNo || "").trim();
+        setBulkAddProgress({
+          current: i,
+          total,
+          label: orderNo ? `Adding ${orderNo}…` : `Row ${i + 1}…`,
+        });
+
         try {
           await api.createOrder(items[i]);
           added++;
         } catch (err) {
           errors.push(`Row ${i + 1}: ${err.message}`);
         }
+
+        setBulkAddProgress({
+          current: i + 1,
+          total,
+          label: `Added ${i + 1} of ${total}`,
+        });
       }
+
+      setBulkAddProgress({ current: total, total, label: "Refreshing orders…" });
       await loadOrders();
+      setBulkAddProgress(null);
+
       if (errors.length) {
         showToast(`Added ${added}. ${errors.slice(0, 2).join("; ")}`, added ? "success" : "error");
       } else {
@@ -116,6 +139,7 @@ export default function App() {
         clear("");
       }
     } catch (err) {
+      setBulkAddProgress(null);
       showToast(err.message, "error");
     }
   }
@@ -127,10 +151,21 @@ export default function App() {
     try {
       const items = JSON.parse(text);
       if (!Array.isArray(items)) throw new Error("Input must be a JSON array.");
+
+      const total = items.length;
+      setBulkUpdateProgress({ current: 0, total, label: "Preparing bulk update…" });
+
       for (let i = 0; i < items.length; i++) {
         const orderNo = String(items[i].orderNo || "").trim();
+        setBulkUpdateProgress({
+          current: i,
+          total,
+          label: orderNo ? `Updating ${orderNo}…` : `Row ${i + 1}…`,
+        });
+
         if (!orderNo) {
           errors.push(`Row ${i + 1}: orderNo is required.`);
+          setBulkUpdateProgress({ current: i + 1, total, label: `Skipped row ${i + 1}` });
           continue;
         }
         try {
@@ -143,8 +178,17 @@ export default function App() {
         } catch (err) {
           errors.push(`Row ${i + 1}: ${err.message}`);
         }
+        setBulkUpdateProgress({
+          current: i + 1,
+          total,
+          label: `Updated ${i + 1} of ${total}`,
+        });
       }
+
+      setBulkUpdateProgress({ current: total, total, label: "Refreshing orders…" });
       await loadOrders();
+      setBulkUpdateProgress(null);
+
       if (errors.length) {
         showToast(`Updated ${updated}. ${errors.slice(0, 2).join("; ")}`, updated ? "success" : "error");
       } else {
@@ -152,6 +196,7 @@ export default function App() {
         clear("");
       }
     } catch (err) {
+      setBulkUpdateProgress(null);
       showToast(err.message, "error");
     }
   }
@@ -278,6 +323,8 @@ export default function App() {
               onBulkAdd={handleBulkAdd}
               onBulkUpdate={handleBulkUpdate}
               onBulkDelete={handleBulkDelete}
+              bulkAddProgress={bulkAddProgress}
+              bulkUpdateProgress={bulkUpdateProgress}
             />
           </>
         )}

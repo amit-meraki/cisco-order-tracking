@@ -2,6 +2,11 @@
   "buildCommand": "npm run build --prefix client",
   "outputDirectory": "client/dist",
   "installCommand": "npm install && npm install --prefix client",
+  "functions": {
+    "api/**/*.js": {
+      "maxDuration": 30
+    }
+  },
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/$1" },
     { "source": "/(.*)", "destination": "/index.html" }

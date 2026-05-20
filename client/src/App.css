@@ -271,6 +271,90 @@ tbody tr:hover:not(.empty-row) {
   margin: 0 0 0.75rem;
 }
 
+.progress-wrap {
+  margin: 0.75rem 0 1rem;
+}
+
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.4rem;
+  font-size: 0.8rem;
+}
+
+.progress-label {
+  color: var(--text);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.progress-count {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.progress-track {
+  height: 8px;
+  background: var(--bg);
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary), #06b6d4);
+  border-radius: 3px;
+  transition: width 0.2s ease;
+}
+
+.pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.pagination-info {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.pagination-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.pagination-size {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.pagination-size select {
+  padding: 0.35rem 0.5rem;
+  font-size: 0.8rem;
+}
+
+.pagination-page {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  min-width: 5.5rem;
+  text-align: center;
+}
+
 .toast {
   position: fixed;
   bottom: 1.5rem;
@@ -352,5 +436,14 @@ tbody tr:hover:not(.empty-row) {
   .header-inner {
     flex-direction: column;
     text-align: center;
+  }
+
+  .pagination {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .pagination-controls {
+    justify-content: center;
   }
 }

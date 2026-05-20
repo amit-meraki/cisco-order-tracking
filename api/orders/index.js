@@ -1,4 +1,5 @@
 import { getDb, COLLECTIONS } from "../../lib/mongodb.js";
+import { mongoErrorMessage } from "../../lib/mongo-error.js";
 import { requireAuth } from "../../lib/auth.js";
 import { setCors, handleOptions } from "../../lib/cors.js";
 import { normalizeOrderNo, validateOrderPayload } from "../../lib/orders.js";
@@ -94,8 +95,14 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "Method not allowed" });
   } catch (err) {
     console.error("orders index error:", err);
-    const message = err.message || "Request failed.";
-    const status = message.includes("required") ? 400 : 500;
-    return res.status(status).json({ error: message });
+    const message = mongoErrorMessage(err);
+    if (message.includes("required")) {
+      return res.status(400).json({ error: message });
+    }
+    const isMongo =
+      message.includes("MongoDB") ||
+      message.includes("MONGODB_URI") ||
+      message.includes("Atlas");
+    return res.status(isMongo ? 503 : 500).json({ error: message });
   }
 }
