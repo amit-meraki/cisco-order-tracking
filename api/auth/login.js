@@ -40,6 +40,9 @@ export default async function handler(req, res) {
     });
   } catch (err) {
     console.error("login error:", err);
-    return res.status(500).json({ error: "Login failed." });
+    const isDev = process.env.NODE_ENV !== "production";
+    return res.status(500).json({
+      error: isDev ? err.message || "Login failed." : "Login failed.",
+    });
   }
 }

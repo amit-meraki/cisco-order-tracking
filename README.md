@@ -65,25 +65,36 @@ SEED_USERS=[{"email":"admin@co.com","password":"secret1","name":"Admin"},{"email
 
 ### 4. Run locally
 
-Terminal 1 — API (Vercel dev, port 3000):
+Terminal 1 — API (port 3000, loads `.env` automatically):
 
 ```bash
 npm run dev:api
 ```
 
-Terminal 2 — React (port 5173, proxies `/api`):
+You should see `API server http://localhost:3000` and `MONGODB_URI: set`, `JWT_SECRET: set`.
+
+Terminal 2 — React (port 5173, proxies `/api` to port 3000):
 
 ```bash
 npm run dev:client
 ```
 
-Or both:
+Or both in one command:
 
 ```bash
 npm run dev
 ```
 
 Open http://localhost:5173 and sign in with your seeded credentials.
+
+### Login returns 500?
+
+1. **API must be running** — only `npm run dev:client` is not enough; start `npm run dev:api` (or `npm run dev`).
+2. **Seed users first** — `npm run seed` (uses the same `.env` as the API).
+3. **Check `.env`** at the project root has `MONGODB_URI`, `JWT_SECRET`, and seed credentials.
+4. Use the same email/password as `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` (wrong password returns **401**, not 500).
+
+Optional: `npm run dev:api:vercel` if you use Vercel CLI (requires `vercel login`).
 
 ## Deploy to Vercel
 

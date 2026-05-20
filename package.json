@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "concurrently -n client,api -c cyan,magenta \"npm run dev:client\" \"npm run dev:api\"",
     "dev:client": "npm run dev --prefix client",
-    "dev:api": "vercel dev --listen 3000",
+    "dev:api": "node scripts/dev-api.mjs",
+    "dev:api:vercel": "vercel dev --listen 3000",
     "build": "npm run build --prefix client",
     "seed": "node scripts/seed.js",
     "preview": "npm run preview --prefix client"
@@ -18,6 +19,7 @@
   },
   "devDependencies": {
     "concurrently": "^9.1.2",
+    "express": "^4.22.2",
     "vercel": "^39.3.0"
   }
 }
