@@ -1,0 +1,23 @@
+{
+  "name": "cisco-order-tracking",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently -n client,api -c cyan,magenta \"npm run dev:client\" \"npm run dev:api\"",
+    "dev:client": "npm run dev --prefix client",
+    "dev:api": "vercel dev --listen 3000",
+    "build": "npm run build --prefix client",
+    "seed": "node scripts/seed.js",
+    "preview": "npm run preview --prefix client"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^16.4.7",
+    "jsonwebtoken": "^9.0.2",
+    "mongodb": "^6.12.0"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "vercel": "^39.3.0"
+  }
+}

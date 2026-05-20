@@ -1,79 +1,151 @@
 # Cisco Order Tracking
 
-A simple static web app to manage Cisco orders. No backend required — runs entirely in the browser and stores data in `localStorage`.
+React app with **MongoDB** storage, **login-only** auth (no sign-up), and deployment on **Vercel**.
 
 ## Features
 
-- **Orders table** with columns: Order No, Status, Description, Ticket Number
-- **Add** a single order via the form
-- **Update** an order by order number (click Edit on a row)
-- **Delete** an order by order number (click Delete on a row)
-- **Bulk add** — paste a JSON array of orders
-- **Bulk update** — paste a JSON array with `orderNo` and fields to change
-- **Bulk delete** — paste order numbers (one per line or comma-separated)
-- **Search** orders in the table
-- **Export / Import** orders as JSON for backup or sharing
+| Role | Permissions |
+|------|-------------|
+| **Guest** | View orders, search, export JSON |
+| **Signed in** | Add, update, delete (single + bulk), import JSON |
 
-## Run locally
+Users are created via the **seed script** only — the app has no registration flow.
 
-Open `index.html` in a browser, or serve the folder:
+## Stack
+
+- **Frontend:** React (Vite) in `client/`
+- **API:** Vercel serverless functions in `api/`
+- **Database:** MongoDB Atlas
+- **Auth:** Email/password + JWT (7-day token)
+
+## Prerequisites
+
+- [Node.js](https://nodejs.org/) 18+
+- [MongoDB Atlas](https://www.mongodb.com/cloud/atlas) free cluster
+- [Vercel](https://vercel.com/) account (for deploy)
+
+## Local setup
+
+### 1. Install dependencies
 
 ```bash
-python3 -m http.server 8080
+npm install
+npm install --prefix client
 ```
 
-Then visit http://localhost:8080
+### 2. Environment variables
 
-## Deploy to GitHub Pages (public app)
-
-1. Create a new GitHub repository (e.g. `cisco-order-tracking`).
-2. Push this folder to the repo:
-
-   ```bash
-   git init
-   git add .
-   git commit -m "Initial commit: Cisco order tracking app"
-   git branch -M main
-   git remote add origin https://github.com/YOUR_USERNAME/cisco-order-tracking.git
-   git push -u origin main
-   ```
-
-3. On GitHub: **Settings → Pages**
-4. Under **Build and deployment**, set **Source** to **Deploy from a branch**
-5. Choose branch **main** and folder **/ (root)**
-6. Save. Your app will be live at:
-
-   `https://YOUR_USERNAME.github.io/cisco-order-tracking/`
-
-## Bulk JSON examples
-
-**Bulk add:**
-
-```json
-[
-  {"orderNo": "PO-1001", "status": "Pending", "description": "Core switch", "ticketNumber": "INC001"},
-  {"orderNo": "PO-1002", "status": "Shipped", "ticketNumber": "INC002"}
-]
+```bash
+cp .env.example .env
 ```
 
-**Bulk update:**
+Edit `.env`:
 
-```json
-[
-  {"orderNo": "PO-1001", "status": "Delivered"},
-  {"orderNo": "PO-1002", "status": "Cancelled", "description": "Returned"}
-]
+| Variable | Description |
+|----------|-------------|
+| `MONGODB_URI` | Atlas connection string |
+| `MONGODB_DB` | Database name (default: `cisco_orders`) |
+| `JWT_SECRET` | Long random string (`openssl rand -base64 32`) |
+| `SEED_ADMIN_EMAIL` | First admin email |
+| `SEED_ADMIN_PASSWORD` | First admin password |
+
+### 3. Seed admin users
+
+```bash
+npm run seed
 ```
 
-**Bulk delete:** enter order numbers in the textarea:
+Creates/updates users in MongoDB. Re-run after changing passwords in `.env`.
+
+Multiple users via JSON:
+
+```env
+SEED_USERS=[{"email":"admin@co.com","password":"secret1","name":"Admin"},{"email":"ops@co.com","password":"secret2","name":"Ops"}]
+```
+
+### 4. Run locally
+
+Terminal 1 — API (Vercel dev, port 3000):
+
+```bash
+npm run dev:api
+```
+
+Terminal 2 — React (port 5173, proxies `/api`):
+
+```bash
+npm run dev:client
+```
+
+Or both:
+
+```bash
+npm run dev
+```
+
+Open http://localhost:5173 and sign in with your seeded credentials.
+
+## Deploy to Vercel
+
+### 1. Push to GitHub
+
+```bash
+git add .
+git commit -m "React app with MongoDB auth"
+git push
+```
+
+### 2. Import project in Vercel
+
+1. [vercel.com/new](https://vercel.com/new) → Import your repository.
+2. Framework preset: **Other** (or Vite — `vercel.json` already sets build commands).
+3. Add **Environment Variables** (Production + Preview):
+
+   - `MONGODB_URI`
+   - `MONGODB_DB` (optional)
+   - `JWT_SECRET`
+
+4. Deploy.
+
+### 3. Seed production database
+
+From your machine with production `MONGODB_URI` in `.env`:
+
+```bash
+npm run seed
+```
+
+Use strong passwords for production users.
+
+### 4. Custom domain (optional)
+
+Vercel project → **Settings → Domains**.
+
+## API routes
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| POST | `/api/auth/login` | No | Login, returns JWT |
+| GET | `/api/orders` | No | List all orders |
+| POST | `/api/orders` | Yes | Create order |
+| PUT | `/api/orders` | Yes | Replace all orders (import) |
+| PUT | `/api/orders/:orderNo` | Yes | Update order |
+| DELETE | `/api/orders/:orderNo` | Yes | Delete order |
+
+## Project structure
 
 ```
-PO-1001
-PO-1002
+├── api/                 # Vercel serverless API
+├── client/              # React (Vite) frontend
+├── lib/                 # Shared DB & auth helpers
+├── scripts/seed.js      # Seed MongoDB users
+├── vercel.json          # Vercel build & SPA routing
+└── .env.example
 ```
 
 ## Notes
 
-- **Order ID** = **Order No** (unique identifier per order)
-- Data is stored in the browser only. Clearing site data or using another device/browser will not show the same orders unless you export/import JSON.
-- For team-wide shared data, you would need a backend (e.g. Firebase, Supabase) — this app is designed for simple GitHub Pages hosting.
+- **Order ID** = **Order No** (unique).
+- Invalid login returns a generic error (no account enumeration).
+- Passwords are hashed with bcrypt (12 rounds) in the database.
+- For GitHub Pages hosting, use the previous Firebase version; this stack requires Vercel (or similar) for the API.
